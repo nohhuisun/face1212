@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관상 프로그램</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            text-align: center; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        #video { 
+            border: 3px solid #667eea; 
+            border-radius: 10px;
+            max-width: 100%;
+            display: none;
+        }
+        #captured { 
+            border: 3px solid #764ba2; 
+            border-radius: 10px;
+            max-width: 100%; 
+            display: none;
+            margin: 20px auto;
+        }
+        #status {
+            font-size: 18px;
+            color: #555;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+        #result { 
+            white-space: pre-line; 
+            margin-top: 20px;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.8;
+            display: none;
+        }
+        .btn {
+            margin: 10px;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+        }
+        .analysis-section {
+            margin-bottom: 15px;
+        }
+        .analysis-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ AI 관상 분석 프로그램</h1>
+        <div id="status">시작 버튼을 눌러 얼굴 촬영을 시작하세요</div>
+        <img id="video" src="" alt="Video Stream">
+        <img id="captured" src="" alt="Captured Image">
+        <div id="buttons">
+            <button id="start" class="btn btn-primary">📸 촬영 시작</button>
+            <button id="retake" class="btn btn-secondary" disabled>🔄 다시 찍기</button>
+            <button id="exit" class="btn btn-danger">❌ 나가기</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const captured = document.getElementById('captured');
+        const status = document.getElementById('status');
+        const result = document.getElementById('result');
+        const startBtn = document.getElementById('start');
+        const retakeBtn = document.getElementById('retake');
+        const exitBtn = document.getElementById('exit');
+
+        let ws;
+        let capturing = false;
+        let captureStart = 0;
+
+        startBtn.addEventListener('click', startCamera);
+        retakeBtn.addEventListener('click', retake);
+        exitBtn.addEventListener('click', () => window.close());
+
+        function startCamera() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            }
+            
+            status.textContent = '웹캠을 준비하고 있습니다...';
+            video.style.display = 'block';
+            
+            ws = new WebSocket('ws://' + window.location.host + '/ws'); 
+            
+            ws.onmessage = function(event) {
+                if (event.data.startsWith('웹캠을')) {
+                    status.textContent = event.data;
+                    ws.close();
+                    return;
+                }
+                
+                video.src = 'data:image/jpeg;base64,' + event.data;
+                checkFace(); 
+            };
+            
+            ws.onclose = function() {
+                status.textContent = '연결 종료';
+                startBtn.disabled = false;
+                retakeBtn.disabled = true;
+            };
+            
+            ws.onerror = function(error) {
+                console.error("WebSocket Error:", error);
+                status.textContent = 'WebSocket 연결 오류 발생';
+            };
+            
+            startBtn.disabled = true;
+            retakeBtn.disabled = true;
+        }
+
+        function checkFace() {
+            if (!capturing) {
+                status.textContent = '얼굴을 인식했습니다. 3초 후 자동으로 촬영됩니다...';
+                capturing = true; 
+                captureStart = Date.now();
+                
+                let countdown = 3;
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        status.textContent = `${countdown}초 후 촬영됩니다...`;
+                    } else {
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
+                
+                setTimeout(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.close(); 
+                    }
+                    capture();
+                }, 3000);
+            }
+        }
+
+        function capture() {
+            captured.src = video.src;
+            captured.style.display = 'block';
+            video.style.display = 'none';
+            status.textContent = '📊 AI가 관상을 분석하고 있습니다... 잠시만 기다려주세요.';
+            analyze();
+        }
+
+        function analyze() {
+            fetch('/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: captured.src })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    result.style.display = 'block';
+                    result.textContent = '❌ ' + data.error;
+                } else {
+                    result.style.display = 'block';
+                    result.innerHTML = data.analysis.replace(/\n/g, '<br>');
+                }
+                status.textContent = '✅ 관상 분석이 완료되었습니다!';
+                startBtn.disabled = false;
+                retakeBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('분석 요청 실패:', error);
+                result.style.display = 'block';
+                result.textContent = '❌ 분석 요청 중 네트워크 오류가 발생했습니다.';
+                status.textContent = '분석 오류';
+                startBtn.disabled = false;
+                retakeBtn.disabled = false;
+            });
+        }
+
+        function retake() {
+            capturing = false;
+            captured.style.display = 'none';
+            video.style.display = 'none';
+            result.style.display = 'none';
+            result.textContent = '';
+            startBtn.disabled = false;
+            retakeBtn.disabled = true;
+            status.textContent = '시작 버튼을 눌러 다시 촬영하세요.';
+        }
+        
+        window.onload = function() {
+            startBtn.disabled = false;
+            retakeBtn.disabled = true;
+            status.textContent = '시작 버튼을 눌러 얼굴 촬영을 시작하세요';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+altair==5.5.0
+annotated-types @ file:///C:/miniconda3/conda-bld/annotated-types_1761745023123/work
+anyio @ file:///C:/miniconda3/conda-bld/anyio_1758622432793/work
+attrs==25.4.0
+blinker==1.9.0
+cachetools==6.2.2
+certifi==2025.11.12
+charset-normalizer==3.4.4
+click @ file:///C:/b/abs_42rbjngfys/croot/click_1744271606983/work
+colorama @ file:///C:/b/abs_a9ozq0l032/croot/colorama_1672387194846/work
+exceptiongroup @ file:///C:/miniconda3/conda-bld/exceptiongroup_1761560480883/work
+Flask==3.1.2
+gitdb==4.0.12
+GitPython==3.1.45
+google-auth==2.43.0
+google-genai==1.47.0
+h11 @ file:///C:/b/abs_224rqu7kel/croot/h11_1748442031959/work
+httpcore==1.0.9
+httpx==0.28.1
+idna @ file:///C:/miniconda3/conda-bld/idna_1761912043328/work
+importlib_metadata==8.7.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+jsonschema==4.25.1
+jsonschema-specifications==2025.9.1
+MarkupSafe==3.0.3
+narwhals==2.13.0
+numpy==2.0.2
+packaging==25.0
+pandas==2.3.3
+pillow==11.3.0
+protobuf==6.33.2
+pyarrow==21.0.0
+pyasn1==0.6.1
+pyasn1_modules==0.4.2
+pydantic @ file:///C:/miniconda3/conda-bld/pydantic_1760697582034/work
+pydantic_core @ file:///C:/miniconda3/conda-bld/pydantic-core_1760597458296/work
+pydeck==0.9.1
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.1
+pytz==2025.2
+referencing==0.36.2
+requests==2.32.5
+rpds-py==0.27.1
+rsa==4.9.1
+six==1.17.0
+smmap==5.0.2
+sniffio @ file:///C:/b/abs_3akdewudo_/croot/sniffio_1705431337396/work
+starlette @ file:///C:/miniconda3/conda-bld/starlette-recipe_1756910711216/work
+streamlit==1.50.0
+tenacity==9.1.2
+toml==0.10.2
+tornado==6.5.3
+typing-inspection @ file:///C:/miniconda3/conda-bld/typing-inspection_1760614191697/work
+typing_extensions @ file:///C:/b/abs_ecq8gc0vbm/croot/typing_extensions_1756281142218/work
+tzdata==2025.2
+urllib3==2.6.2
+watchdog==6.0.0
+websockets==15.0.1
+Werkzeug==3.1.4
+zipp==3.23.0
